@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QField Support - FibreFlow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+            background: #0a1628;
+            color: #e4e7eb;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: #0d1b2a;
+            border-right: 1px solid #1e293b;
+            padding: 24px 16px;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .nav-link:hover {
+            background: #1e293b;
+            color: #f1f5f9;
+        }
+
+        .nav-link.active {
+            background: #1e293b;
+            color: #3b82f6;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-y: auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: #064e3b;
+            color: #6ee7b7;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #6ee7b7;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .search-box {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e4e7eb;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: #3b82f6;
+        }
+
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: #0d1b2a;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+            transition: border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: #334155;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: #1e293b;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 600;
+            color: #f1f5f9;
+            line-height: 1;
+        }
+
+        .stat-subtitle {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* Action Cards */
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .action-card {
+            background: #0d1b2a;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .action-card-icon {
+            width: 40px;
+            height: 40px;
+            background: #1e293b;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+
+        .action-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .action-card p {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        /* Issues Section */
+        .issues-section {
+            background: #0d1b2a;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .count-badge {
+            background: #1e293b;
+            color: #94a3b8;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #1e293b;
+            color: #3b82f6;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            border-color: #3b82f6;
+            background: #1e293b;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background: #1e293b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: #f1f5f9;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        /* Issue Item */
+        .issue-item {
+            padding: 16px;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .issue-item:hover {
+            border-color: #334155;
+            background: #0f1d30;
+        }
+
+        .issue-header {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .issue-status-icon {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+        }
+
+        .issue-title {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 500;
+            color: #f1f5f9;
+            line-height: 1.4;
+        }
+
+        .issue-state-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .issue-state-badge.open {
+            background: #422006;
+            color: #fbbf24;
+        }
+
+        .issue-state-badge.closed {
+            background: #064e3b;
+            color: #6ee7b7;
+        }
+
+        .issue-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: #64748b;
+            margin-left: 32px;
+        }
+
+        .issue-labels {
+            display: flex;
+            gap: 6px;
+            margin-left: 32px;
+            margin-top: 8px;
+        }
+
+        .label {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #1e293b;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error */
+        .error {
+            background: #450a0a;
+            border: 1px solid #7f1d1d;
+            padding: 16px;
+            border-radius: 8px;
+            color: #fca5a5;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+                padding: 0;
+            }
+
+            .main-content {
+                padding: 16px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">🛟</div>
+                <span class="logo-text">QField Support</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <span class="nav-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#tickets" class="nav-link">
+                        <span class="nav-icon">🎫</span>
+                        All Tickets
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="checkStatus(); return false;">
+                        <span class="nav-icon">🏥</span>
+                        System Status
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="https://docs.qfield.org/" class="nav-link" target="_blank">
+                        <span class="nav-icon">📚</span>
+                        Documentation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="createNewIssue(); return false;">
+                        <span class="nav-icon">✨</span>
+                        New Ticket
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="page-title">
+                        Support Dashboard
+                        <span class="status-badge">
+                            <span class="status-dot"></span>
+                            All systems operational
+                        </span>
+                    </h1>
+                </div>
+                <div class="search-box">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search tickets..."
+                        onkeyup="searchIssues()"
+                    />
+                </div>
+            </header>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-label">Open Tickets</div>
+                            <div class="stat-value" id="openCount">-</div>
+                            <div class="stat-subtitle">Pending resolution</div>
+                        </div>
+                        <div class="stat-icon">🎫</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-label">Resolved</div>
+                            <div class="stat-value" id="closedCount">-</div>
+                            <div class="stat-subtitle">Successfully closed</div>
+                        </div>
+                        <div class="stat-icon">✅</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-label">Avg Response Time</div>
+                            <div class="stat-value">< 1h</div>
+                            <div class="stat-subtitle">Target met</div>
+                        </div>
+                        <div class="stat-icon">⚡</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-label">System Health</div>
+                            <div class="stat-value">100%</div>
+                            <div class="stat-subtitle" id="systemStatus">All services running</div>
+                        </div>
+                        <div class="stat-icon">🏥</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Cards -->
+            <div class="action-cards">
+                <div class="action-card" onclick="createNewIssue()">
+                    <div class="action-card-icon">🐛</div>
+                    <h3>Report a Bug</h3>
+                    <p>Found an issue? Let us know and we'll investigate immediately.</p>
+                </div>
+
+                <div class="action-card" onclick="viewDocs()">
+                    <div class="action-card-icon">📖</div>
+                    <h3>Browse Documentation</h3>
+                    <p>Explore guides, tutorials, and best practices for QField.</p>
+                </div>
+
+                <div class="action-card" onclick="checkStatus()">
+                    <div class="action-card-icon">🔍</div>
+                    <h3>Check System Status</h3>
+                    <p>View real-time status of QField services and infrastructure.</p>
+                </div>
+            </div>
+
+            <!-- Issues Section -->
+            <section class="issues-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        Recent Support Tickets
+                        <span class="count-badge" id="totalCount">0</span>
+                    </h2>
+                    <button class="btn" onclick="createNewIssue()">
+                        + New Ticket
+                    </button>
+                </div>
+
+                <div id="issuesContent">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p style="color: #64748b;">Loading support tickets...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Configuration
+        const GITHUB_REPO = 'opengisch/QFieldCloud';
+        const GITHUB_TOKEN = '';
+        const QFIELD_STATUS_URL = 'https://qfield.fibreflow.app/api/v1/status/';
+
+        // Load issues from GitHub
+        async function loadIssues() {
+            const issuesContent = document.getElementById('issuesContent');
+
+            try {
+                const headers = {
+                    'Accept': 'application/vnd.github.v3+json'
+                };
+
+                if (GITHUB_TOKEN) {
+                    headers['Authorization'] = `token ${GITHUB_TOKEN}`;
+                }
+
+                const response = await fetch(
+                    `https://api.github.com/repos/${GITHUB_REPO}/issues?state=all&per_page=20`,
+                    { headers }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`GitHub API error: ${response.status}`);
+                }
+
+                const issues = await response.json();
+
+                // Update stats
+                const openIssues = issues.filter(i => i.state === 'open').length;
+                const closedIssues = issues.filter(i => i.state === 'closed').length;
+                document.getElementById('openCount').textContent = openIssues;
+                document.getElementById('closedCount').textContent = closedIssues;
+                document.getElementById('totalCount').textContent = issues.length;
+
+                if (issues.length === 0) {
+                    issuesContent.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🎫</div>
+                            <h3>No support tickets yet</h3>
+                            <p>Create your first ticket to get help with QField issues</p>
+                            <button class="btn" onclick="createNewIssue()">+ Create Ticket</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                displayIssues(issues);
+
+            } catch (error) {
+                console.error('Error loading issues:', error);
+                issuesContent.innerHTML = `
+                    <div class="error">
+                        <strong>Unable to load support tickets</strong><br>
+                        ${error.message}
+                    </div>
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <p>Try viewing tickets directly on GitHub</p>
+                        <a href="https://github.com/${GITHUB_REPO}/issues" class="btn" target="_blank">
+                            View on GitHub →
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        function displayIssues(issues) {
+            const issuesContent = document.getElementById('issuesContent');
+
+            const html = issues.map(issue => {
+                const stateIcon = issue.state === 'open' ? '🔓' : '✅';
+                const stateClass = issue.state === 'open' ? 'open' : 'closed';
+
+                const labels = issue.labels.map(label => {
+                    const bgColor = `#${label.color}`;
+                    const textColor = getBrightness(label.color) > 128 ? '#000' : '#fff';
+                    return `<span class="label" style="background:${bgColor};color:${textColor};">${label.name}</span>`;
+                }).join('');
+
+                const createdDate = new Date(issue.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                const commentsCount = issue.comments > 0 ? `💬 ${issue.comments}` : '';
+
+                return `
+                    <div class="issue-item" onclick="window.open('${issue.html_url}', '_blank')">
+                        <div class="issue-header">
+                            <span class="issue-status-icon">${stateIcon}</span>
+                            <div class="issue-title">${issue.title}</div>
+                            <span class="issue-state-badge ${stateClass}">${issue.state}</span>
+                        </div>
+                        <div class="issue-meta">
+                            <span>#${issue.number}</span>
+                            <span>opened ${createdDate}</span>
+                            <span>by ${issue.user.login}</span>
+                            ${commentsCount ? `<span>${commentsCount}</span>` : ''}
+                        </div>
+                        ${labels ? `<div class="issue-labels">${labels}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            issuesContent.innerHTML = html;
+            window.allIssues = issues;
+        }
+
+        function searchIssues() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+
+            if (!window.allIssues) return;
+
+            if (!query) {
+                displayIssues(window.allIssues);
+                return;
+            }
+
+            const filtered = window.allIssues.filter(issue =>
+                issue.title.toLowerCase().includes(query) ||
+                issue.body?.toLowerCase().includes(query) ||
+                issue.labels.some(label => label.name.toLowerCase().includes(query))
+            );
+
+            displayIssues(filtered);
+        }
+
+        function getBrightness(hexColor) {
+            const r = parseInt(hexColor.substr(0, 2), 16);
+            const g = parseInt(hexColor.substr(2, 2), 16);
+            const b = parseInt(hexColor.substr(4, 2), 16);
+            return (r * 299 + g * 587 + b * 114) / 1000;
+        }
+
+        function createNewIssue() {
+            window.open(`https://github.com/${GITHUB_REPO}/issues/new`, '_blank');
+        }
+
+        function viewDocs() {
+            window.open('https://docs.qfield.org/', '_blank');
+        }
+
+        async function checkStatus() {
+            const statusEl = document.getElementById('systemStatus');
+            try {
+                const response = await fetch(QFIELD_STATUS_URL);
+                if (response.ok) {
+                    const data = await response.json();
+                    statusEl.textContent = 'All services operational';
+                    alert(`✅ QField System Status: OPERATIONAL\n\nDatabase: ${data.database || 'OK'}\nStorage: ${data.storage || 'OK'}\nVersion: ${data.version || 'Unknown'}`);
+                } else {
+                    statusEl.textContent = 'Some services degraded';
+                    alert('⚠️ QFieldCloud may be experiencing issues.\n\nCheck https://qfield.fibreflow.app for details.');
+                }
+            } catch (error) {
+                statusEl.textContent = 'Unable to check status';
+                alert('❌ Unable to reach QFieldCloud.\n\nPlease try again later or contact support.');
+            }
+        }
+
+        // Auto-refresh every 2 minutes
+        setInterval(loadIssues, 120000);
+
+        // Load on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadIssues();
+            checkStatus();
+        });
+    </script>
+</body>
+</html>
