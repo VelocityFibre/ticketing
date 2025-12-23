@@ -1,0 +1,62 @@
+name: Autonomous QField Support
+
+# Trigger on new issues in VelocityFibre/ticketing repository
+on:
+  repository_dispatch:
+    types: [qfield_support_issue]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to resolve'
+        required: true
+        type: number
+
+jobs:
+  auto-resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install python-dotenv anthropic psycopg2-binary
+
+      - name: Setup SSH key for QFieldCloud
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.QFIELD_VPS_SSH_KEY }}" > ~/.ssh/qfield_vps
+          chmod 600 ~/.ssh/qfield_vps
+          ssh-keyscan -H 72.61.166.168 >> ~/.ssh/known_hosts
+
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          QFIELDCLOUD_VPS_HOST=72.61.166.168
+          QFIELDCLOUD_VPS_USER=root
+          QFIELDCLOUD_PROJECT_PATH=/opt/qfieldcloud
+          EOF
+
+      - name: Run autonomous resolution
+        env:
+          ISSUE_NUMBER: ${{ github.event.inputs.issue_number || github.event.client_payload.issue_number }}
+        run: |
+          python .github/workflows/scripts/auto_resolve.py $ISSUE_NUMBER
+
+      - name: Upload diagnostics (if failed)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostics-issue-${{ github.event.inputs.issue_number || github.event.client_payload.issue_number }}
+          path: /tmp/qfield_diagnostics.log
+          retention-days: 7
