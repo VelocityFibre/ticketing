@@ -2,6 +2,8 @@ name: Autonomous QField Support
 
 # Trigger on new issues in VelocityFibre/ticketing repository
 on:
+  issues:
+    types: [opened, reopened]
   repository_dispatch:
     types: [qfield_support_issue]
   workflow_dispatch:
@@ -52,7 +54,7 @@ jobs:
 
       - name: Run autonomous resolution
         env:
-          ISSUE_NUMBER: ${{ github.event.inputs.issue_number || github.event.client_payload.issue_number }}
+          ISSUE_NUMBER: ${{ github.event.inputs.issue_number || github.event.issue.number || github.event.client_payload.issue_number }}
         run: |
           python .github/workflows/scripts/auto_resolve.py $ISSUE_NUMBER
 
@@ -60,6 +62,6 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: diagnostics-issue-${{ github.event.inputs.issue_number || github.event.client_payload.issue_number }}
+          name: diagnostics-issue-${{ github.event.inputs.issue_number || github.event.issue.number || github.event.client_payload.issue_number }}
           path: /tmp/qfield_diagnostics.log
           retention-days: 7
