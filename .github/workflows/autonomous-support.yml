@@ -33,7 +33,7 @@ jobs:
       - name: Setup SSH key for QFieldCloud
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.QFIELD_VPS_SSH_KEY }}" > ~/.ssh/qfield_vps
+          echo "${{ secrets.QFIELD_VPS_SSH_KEY }}" | base64 -d > ~/.ssh/qfield_vps
           chmod 600 ~/.ssh/qfield_vps
           ssh-keyscan -H 72.61.166.168 >> ~/.ssh/known_hosts
 
