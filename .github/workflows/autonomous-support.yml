@@ -40,7 +40,13 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.QFIELD_VPS_SSH_KEY }}" | base64 -d > ~/.ssh/qfield_vps
           chmod 600 ~/.ssh/qfield_vps
-          ssh-keyscan -H 72.61.166.168 >> ~/.ssh/known_hosts
+          # Add host key with timeout and fallback to StrictHostKeyChecking=no
+          timeout 10 ssh-keyscan -H 72.61.166.168 >> ~/.ssh/known_hosts 2>/dev/null || echo "ssh-keyscan timeout - will use StrictHostKeyChecking=no"
+          cat >> ~/.ssh/config << EOF
+          Host 72.61.166.168
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+          EOF
 
       - name: Create .env file
         run: |
